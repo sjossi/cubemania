@@ -53,9 +53,9 @@ describe Record do
       s << create(:single, :created_at => Time.new(2012, 1, 8))
       s << create(:single, :created_at => Time.new(2012, 5, 2))
       s << create(:single, :created_at => Time.new(2012, 2, 2))
-      record = Record.new :amount => 5, :singles => s
-      record.save
-      record.set_at.should == s[3].created_at
+      record = build :record, :amount => 5, :singles => s
+      record.save!
+      record.reload.set_at.should == s[3].created_at
     end
   end
 
