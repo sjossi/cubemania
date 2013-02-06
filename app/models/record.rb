@@ -10,34 +10,14 @@ class Record < ActiveRecord::Base
   end
 
   validates_presence_of :user_id, :puzzle_id, :time, :amount, :singles, :set_at
-  validates_uniqueness_of :user_id, :scope => [:puzzle_id, :amount], :message => "can't have more than one record per puzzle and amount"
   validates_inclusion_of :amount, :in => RecordType.counts
   validates_length_of :comment, :maximum => 255
   validate :has_as_many_singles_as_amount
+  validate :is_faster_than_old_record
 
   before_validation :set_set_at, :set_comments_from_singles
 
   humanize :time => :time
-
-  def self.update_with!(user, puzzle, amount, time, singles, force = false) # TODO use hash
-    old_record = where(:user_id => user.id,
-                       :puzzle_id => puzzle.id,
-                       :amount => amount).first
-    if old_record && (force || old_record.time > time)
-      old_record.update_attributes(:time => time, :singles => singles)
-    elsif old_record.nil?
-      Record.create! :user_id => user.id,
-                     :puzzle_id => puzzle.id,
-                     :amount => amount,
-                     :time => time,
-                     :singles => singles
-    end
-  end
-
-  def self.remove!(user, puzzle, amount)
-    record = where(:user_id => user.id, :puzzle_id => puzzle.id, :amount => amount).first
-    record.destroy if record
-  end
 
   def self.grouped_by_puzzle_and_amount
     grouped_by_puzzles = all.group_by { |r| r.puzzle }
@@ -73,5 +53,10 @@ class Record < ActiveRecord::Base
 
   def set_comments_from_singles
     self.comment = comments_from_singles
+  end
+
+  def is_faster_than_old_record
+    last_record = Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount).order("created_at desc").first # TODO extract method
+    errors.add(:time, "must be faster than old record") if last_record && last_record.time <= time
   end
 end

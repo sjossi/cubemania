@@ -14,6 +14,35 @@ describe Record do
       record.should_not be_valid
       record.errors[:singles].should_not be_empty
     end
+
+    describe "time" do
+      before do
+        create :record, :user_id => 1, :puzzle_id => 2, :amount => 5, :time => 50, :created_at => DateTime.new(2012, 11, 1)
+        create :record, :user_id => 1, :puzzle_id => 2, :amount => 5, :time => 20, :created_at => DateTime.new(2012, 12, 2)
+      end
+
+      it "is not valid if the new time is slower than the last record" do
+        r = build :record, :user_id => 1, :puzzle_id => 2, :time => 40
+        expect(r).to_not be_valid
+        expect(r.errors[:time]).to_not be_empty
+      end
+
+      it "is not valid if the new time is equal to the old record" do
+        r = build :record, :user_id => 1, :puzzle_id => 2, :time => 20
+        expect(r).to_not be_valid
+        expect(r.errors[:time]).to_not be_empty
+      end
+
+      it "is valid if the new time is faster" do
+        r = build :record, :user_id => 1, :puzzle_id => 2, :time => 19
+        expect(r).to be_valid
+      end
+
+      it "keeps different record types seperate" do
+        r = build :record, :user_id => 1, :puzzle_id => 2, :amount => 1, :time => 100
+        expect(r).to be_valid
+      end
+    end
   end
 
   describe "#set_at" do
@@ -103,85 +132,6 @@ describe Record do
 
     it "returns all scrambles of the singles" do
       expect(record.scrambles).to eq(["D2 R2", "R B"])
-    end
-  end
-
-  describe ".update_with" do
-    let(:singles) { create_list(:single, 5) }
-
-    context "when record exists" do
-      let!(:record) { create :record, :time => 10, :amount => 5, :singles => singles }
-      let(:user) { record.user }
-      let(:puzzle) { record.puzzle }
-
-      context "and the new time is faster" do
-        it "updates the existing record" do
-          Record.update_with!(user, puzzle, 5, 9, singles)
-          record.reload.time.should == 9
-        end
-
-        it "returns trueish value" do
-          Record.update_with!(user, puzzle, 5, 9, singles).should be_true
-        end
-      end
-
-      context "and the new time isn't faster" do
-        it "doesn't update the record" do
-          Record.update_with!(user, puzzle, 5, 11, singles)
-          record.reload.time.should == 10
-        end
-
-        it "returns falseish value" do
-          Record.update_with!(user, puzzle, 5, 11, singles).should be_false
-        end
-      end
-
-      context "force writing of record" do
-        it "overwrites existing record if force flag is set" do
-          Record.update_with!(user, puzzle, 5, 11, singles, true)
-          record.reload.time.should == 11
-        end
-
-        it "returns trueish value" do
-          Record.update_with!(user, puzzle, 5, 11, singles, true).should be_true
-        end
-      end
-    end
-
-    context "when no record exists" do
-      it "creates a new record" do
-        user = stub(:id => 4)
-        puzzle = stub(:id => 4)
-        lambda {
-          Record.update_with!(user, puzzle, 5, 9, singles)
-        }.should change(Record, :count).by(1)
-      end
-    end
-  end
-
-  describe ".remove!" do
-    let(:user) { create :user }
-    let(:puzzle_1) { create :puzzle }
-    let(:puzzle_2) { create :puzzle }
-
-    before :each do
-      create :record, :user => user, :puzzle => puzzle_1, :amount => 1, :singles => build_list(:single, 1)
-      @record = create :record, :user => user, :puzzle => puzzle_1, :amount => 5, :singles => build_list(:single, 5)
-      create :record, :user => user, :puzzle => puzzle_1, :amount => 12, :singles => build_list(:single, 12)
-      create :record, :user => user, :puzzle => puzzle_2, :amount => 5, :singles => build_list(:single, 5)
-    end
-
-    it "removes the existing avg5 record for puzzle 2 and user 1" do
-      lambda {
-        Record.remove!(user, puzzle_1, 5)
-      }.should change(Record, :count).by(-1)
-      Record.exists?(@record).should == false
-    end
-
-    it "does nothing if the record doesn't exist" do
-      lambda {
-        Record.remove!(user, puzzle_2, 12)
-      }.should_not change(Record, :count)
     end
   end
 end
