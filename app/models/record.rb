@@ -17,7 +17,13 @@ class Record < ActiveRecord::Base
 
   before_validation :set_set_at, :set_comments_from_singles
 
+  before_save :invalidate_old_records
+
   humanize :time => :time
+
+  def self.latest
+    where(:latest => true)
+  end
 
   def self.grouped_by_puzzle_and_amount
     grouped_by_puzzles = all.group_by { |r| r.puzzle }
@@ -58,5 +64,10 @@ class Record < ActiveRecord::Base
   def is_faster_than_old_record
     last_record = Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount).order("created_at desc").first # TODO extract method
     errors.add(:time, "must be faster than old record") if last_record && last_record.time <= time
+  end
+
+  def invalidate_old_records
+    return unless latest?
+    Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount, :latest => true).update_all(:latest => false)
   end
 end

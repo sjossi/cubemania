@@ -24,9 +24,7 @@ class User < ActiveRecord::Base
   end
 
   has_many :records, :include => { :puzzle => :kind }, :order => 'puzzles.name, kinds.name', :dependent => :delete_all do
-    def for(puzzle, amount)
-      find_by_puzzle_id_and_amount puzzle.id, amount
-    end
+    def for(puzzle); where(:puzzle_id => puzzle.id); end
   end
 
   scope :active, where('singles_count > 0')

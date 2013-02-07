@@ -4,7 +4,7 @@ module Api
       puzzle = Puzzle.find params[:puzzle_id]
       user = User.find params[:user_id]
 
-      @records = user.records.where(:puzzle_id => puzzle.id)
+      @records = user.records.for(puzzle).latest
 
       respond_to do |format|
         format.html

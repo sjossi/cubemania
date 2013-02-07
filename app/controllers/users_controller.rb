@@ -53,7 +53,7 @@ class UsersController < ApplicationController
 
   def show
     @user = object
-    @records = @user.records
+    @records = @user.records.latest
     @activity = @user.singles.grouped(by: :day, time_zone: @user.time_zone).where(:created_at => 1.year.ago..Time.zone.now)
     if logged_in? and current_user != @user
       @own_records = current_user.records.grouped_by_puzzle_and_amount

@@ -5,7 +5,7 @@ class RecordsController < ApplicationController
     @puzzle = Puzzle.find params[:puzzle_id]
     amount = RecordType.by_short_name(params[:type]).try(:count) || 5
 
-    @records = @puzzle.records.amount(amount).paginate(:page => params[:page], :per_page => 50)
+    @records = @puzzle.records.amount(amount).latest.paginate(:page => params[:page], :per_page => 50)
   end
 
   def show

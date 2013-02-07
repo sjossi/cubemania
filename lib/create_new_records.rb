@@ -14,7 +14,8 @@ class CreateNewRecords
                    :puzzle => puzzle,
                    :time => time,
                    :singles => singles,
-                   :amount => type.count
+                   :amount => type.count,
+                   :latest => true
     r.save
   end
 end

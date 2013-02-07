@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130127004622) do
+ActiveRecord::Schema.define(:version => 20130206234127) do
 
   create_table "comments", :force => true do |t|
     t.text     "content",    :null => false
@@ -71,14 +71,15 @@ ActiveRecord::Schema.define(:version => 20130127004622) do
   add_index "puzzles", ["slug"], :name => "index_puzzles_on_slug", :unique => true
 
   create_table "records", :force => true do |t|
-    t.integer  "time",       :null => false
-    t.integer  "puzzle_id",  :null => false
-    t.integer  "user_id",    :null => false
-    t.integer  "amount",     :null => false
-    t.datetime "set_at",     :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer  "time",                         :null => false
+    t.integer  "puzzle_id",                    :null => false
+    t.integer  "user_id",                      :null => false
+    t.integer  "amount",                       :null => false
+    t.datetime "set_at",                       :null => false
+    t.datetime "created_at",                   :null => false
+    t.datetime "updated_at",                   :null => false
     t.string   "comment"
+    t.boolean  "latest",     :default => true, :null => false
   end
 
   add_index "records", ["puzzle_id", "amount", "time"], :name => "index_records_on_puzzle_id_and_amount_and_time"

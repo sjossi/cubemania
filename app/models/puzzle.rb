@@ -11,7 +11,7 @@ class Puzzle < ActiveRecord::Base
   has_many :competitions, :dependent => :destroy
   has_many :singles, :dependent => :destroy
   has_many :records, :order => "records.time", :include => :user, :conditions => { 'users.ignored' => false }, :dependent => :destroy do
-    def amount(n)
+    def amount(n) # TODO move to Record
       where(:amount => n)
     end
   end

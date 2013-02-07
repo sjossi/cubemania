@@ -59,6 +59,30 @@ describe Record do
     end
   end
 
+  describe "#latest" do
+    let(:puzzle) { create :puzzle }
+    let(:user) { create :user }
+    let!(:record_1) { create :record, :latest => true, :user => user, :puzzle => puzzle, :amount => 1 }
+    let!(:record_2) { create :record, :latest => true, :user => user, :puzzle => puzzle, :amount => 5 }
+    let!(:record_3) { create :record, :latest => false, :user => user, :puzzle => puzzle, :amount => 12, :time => 30 }
+    let!(:record_4) { create :record, :latest => true, :user => user, :puzzle => puzzle, :amount => 12, :time => 20 }
+
+    it "removes latest flag from all other records when a new one is saved" do
+      r = build :record, :user => user, :puzzle => puzzle, :amount => 12, :time => 5, :latest => true
+      r.save!
+      expect(record_1.reload).to be_latest
+      expect(record_2.reload).to be_latest
+      expect(record_3.reload).to_not be_latest
+      expect(record_4.reload).to_not be_latest
+    end
+
+    it "doesn't change old records if the new one isn't a latest one" do
+      r = build :record, :user => user, :puzzle => puzzle, :amount => 12, :time => 5, :latest => false
+      r.save!
+      expect(record_4.reload).to be_latest
+    end
+  end
+
   describe "#singles" do
     it "defaults to an empty array" do
       subject.singles.should == []
@@ -92,6 +116,18 @@ describe Record do
       expect(records[puzzle_1][5]).to eq(record_1)
       expect(records[puzzle_2][5]).to eq(record_2)
       expect(records[puzzle_2][12]).to eq(record_3)
+    end
+  end
+
+  describe ".latest" do
+    let!(:record_1) { create :record, :amount => 5, :latest => false }
+    let!(:record_2) { create :record, :amount => 5, :latest => true }
+    let!(:record_3) { create :record, :amount => 5, :latest => false }
+    let!(:record_4) { create :record, :amount => 1, :latest => false }
+    let!(:record_5) { create :record, :amount => 1, :latest => true }
+
+    it "finds for each record type the latest record" do
+      expect(Record.latest.sort).to eq([record_2, record_5].sort)
     end
   end
 
