@@ -62,12 +62,12 @@ class Record < ActiveRecord::Base
   end
 
   def is_faster_than_old_record
-    last_record = Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount).order("created_at desc").first # TODO extract method
+    last_record = Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount).latest.first
     errors.add(:time, "must be faster than old record") if last_record && last_record.time <= time
   end
 
   def invalidate_old_records
     return unless latest?
-    Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount, :latest => true).update_all(:latest => false)
+    Record.where(:user_id => user_id, :puzzle_id => puzzle_id, :amount => amount).latest.update_all(:latest => false)
   end
 end
