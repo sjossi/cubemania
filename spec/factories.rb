@@ -77,9 +77,13 @@ FactoryGirl.define do
     set_at Time.now
   end
 
-  factory :match do
+  factory :following do
+    association :follower, :factory => :user
+    association :followee, :factory => :user
+  end
+
+  factory :follow_activity do
     association :user
-    association :opponent, :factory => :user
-    association :puzzle
+    association :trackable, :factory => :following
   end
 end
