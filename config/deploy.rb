@@ -18,6 +18,17 @@ ssh_options[:forward_agent] = true
 after "deploy", "deploy:cleanup" # keep only the last 5 releases
 
 namespace :deploy do
+  task :cold do
+    update
+    load_schema
+    start
+  end
+
+  task :load_schema, :roles => :app do
+    rails_env = fetch(:rails_env, "production")
+    run "cd #{current_path} && RAILS_ENV=#{rails_env} rake db:schema:load"
+  end
+
   %w[start stop restart].each do |command|
     desc "#{command} unicorn server"
     task command, roles: :app, except: {no_release: true} do
@@ -48,4 +59,6 @@ namespace :deploy do
     end
   end
   before "deploy", "deploy:check_revision"
+
+  after "deploy:update_code", "deploy:migrate"
 end
