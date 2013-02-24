@@ -42,6 +42,8 @@ gem 'rabl', '0.6.10' # TODO there seems to be a bug with json roots and children
 
 gem 'unicorn'
 
+gem 'capistrano'
+
 gem 'newrelic_rpm'
 
 group :development, :test do
