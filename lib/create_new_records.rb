@@ -2,9 +2,9 @@ class CreateNewRecords
   def self.for(user, puzzle)
     singles = user.singles.for(puzzle).recent(RecordType.max_count)
 
-    RecordType.all.each do |t|
+    RecordType.all.map do |t|
       self.for_type user, puzzle, singles[0..(t.count - 1)], t
-    end.any? { |e| e }
+    end.compact
   end
 
   def self.for_type(user, puzzle, singles, type)
@@ -16,6 +16,6 @@ class CreateNewRecords
                    :singles => singles,
                    :amount => type.count,
                    :latest => true
-    r.save
+    r if r.save
   end
 end

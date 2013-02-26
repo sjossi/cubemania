@@ -46,17 +46,20 @@ describe CreateNewRecords do
   end
 
   describe ".for(user, puzzle)" do
-    let(:type_1) { stub }
-    let(:type_2) { stub }
+    let(:type_1) { stub(:type, :count => 5) }
+    let(:type_2) { stub(:type, :count => 12) }
     let(:types) { [type_1, type_2] }
     let(:singles) { [stub, stub, stub] }
+    let(:record) { stub }
 
-    xit "runs creation of new records for each type" do
+    it "runs creation of new records for each type and returns all updated records" do
       user.stub_chain(:singles, :for, :recent).and_return(singles)
       RecordType.should_receive(:all).and_return(types)
+      RecordType.stub(:max_count => 12)
 
-      CreateNewRecords.should_receive(:for_type)#.with(user, puzzle, singles, type_1)
-      CreateNewRecords.for(user, puzzle)
+      CreateNewRecords.should_receive(:for_type).with(user, puzzle, singles, type_1).and_return(nil)
+      CreateNewRecords.should_receive(:for_type).with(user, puzzle, singles, type_2).and_return(record)
+      expect(CreateNewRecords.for(user, puzzle)).to eq [record]
     end
   end
 end
